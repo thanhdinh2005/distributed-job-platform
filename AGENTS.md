@@ -12,12 +12,16 @@ Not a production system. Optimize for *understanding*, not for shipping fast or 
 
 **Current stage** (update this block whenever it changes — it is the first thing an agent uses to
 judge scope):
-- Single Spring Boot module in `jobplatform/`; it boots, and `JobplatformApplication` is the only
-  Java class.
-- Flyway migrations V1–V3 define `jobs`, `job_events`, `outbox_events`.
-- No application code yet: `api/`, `domain/`, `worker/`, `outbox/`, `config/` packages do not exist.
-- No RabbitMQ, no compose file, no deployment target.
-- Local PostgreSQL is not provisioned yet (no `docker-compose.yml` exists) — see §5.
+- v1, mid-implementation. Single Spring Boot module in `jobplatform/`.
+- Implemented: the job state machine, the REST API (create / get / events / cancel), the
+  `CREATED → QUEUED` enqueuer, and the claim → handle → settle worker loop (happy path only).
+- Not implemented: retry/backoff, `DEAD_LETTER` handling, stale-`PROCESSING` recovery, the
+  transactional outbox (`outbox_events` exists but nothing writes or reads it), worker concurrency
+  safety (`attempt_count` is never incremented, no `@Version`).
+- Tests: unit and `@WebMvcTest` slices run without Docker; anything importing
+  `TestcontainersConfiguration` needs a running Docker daemon.
+- No RabbitMQ, no compose file, no deployment target. The database is a remote instance reached
+  through a forwarded port (see `.env`), not something this repository provisions.
 
 If this block is stale, say so and ask, rather than assuming either extreme (empty repo or
 half-built system).
@@ -107,6 +111,10 @@ Notes:
   surface as `Could not open file channel for ...\.m2\repository\.locks\...` — that is an
   environment denial, not a broken build. Request wider access; do not "fix" it by editing the POM
   or switching to an offline/local-repo workaround.
+- **Transaction boundaries.** `@Transactional` is applied by a proxy, so a method calling a sibling
+  `@Transactional` method **in the same class** gets no transaction at all. Transactional work lives
+  on its own bean (`JobClaimer`, `JobSettler`, `JobEnqueuer`); the calling loop (`JobWorker`) must
+  stay non-transactional so handlers never run inside one.
 - If the build changes, update this section in the same commit. Stale commands are worse than none.
 
 ## 6. Package Structure

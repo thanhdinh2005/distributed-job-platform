@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -61,6 +62,11 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(HttpMessageNotReadableException.class)
   ProblemDetail handleUnreadableBody(HttpMessageNotReadableException ex) {
     return problem(ErrorCode.VALIDATION_FAILED, "Request body is missing or malformed");
+  }
+
+  @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+  public ProblemDetail handleMethodNotSupported(HttpRequestMethodNotSupportedException ex) {
+    return problem(ErrorCode.METHOD_NOT_ALLOW, "Method is not allow for this resource");
   }
 
   /** Unknown path: without this, the catch-all below would report it as a 500. */

@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.util.Map;
 
 /**
@@ -25,14 +27,16 @@ public class JobCreator {
 
   private final JobRepository jobRepository;
   private final JobEventRepository jobEventRepository;
+  private final Clock clock;
 
   @Transactional
   public Job create(String jobType, Map<String, Object> payload) {
-    Job job = Job.create(jobType, payload);
+    Instant now = clock.instant();
+    Job job = Job.create(jobType, payload, now);
     jobRepository.save(job);
 
     // from_status is null: the job had no previous state. That is a fact, not a missing value.
-    jobEventRepository.save(JobEvent.of(job, null, JobStatus.CREATED, "job created"));
+    jobEventRepository.save(JobEvent.of(job, null, JobStatus.CREATED, "job created", now));
 
     return job;
   }

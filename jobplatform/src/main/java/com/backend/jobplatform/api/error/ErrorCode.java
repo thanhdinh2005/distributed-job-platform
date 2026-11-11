@@ -14,6 +14,7 @@ public enum ErrorCode {
   JOB_NOT_FOUND(HttpStatus.NOT_FOUND, "Job not found"),
   JOB_ILLEGAL_TRANSITION(HttpStatus.CONFLICT, "Illegal status transition"),
   VALIDATION_FAILED(HttpStatus.BAD_REQUEST, "Request validation failed"),
+  METHOD_NOT_ALLOW(HttpStatus.METHOD_NOT_ALLOWED, "Method not allow for this resource"),
   ROUTE_NOT_FOUND(HttpStatus.NOT_FOUND, "Route not found"),
   INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected server error");
 
