@@ -5,6 +5,7 @@ import com.backend.jobplatform.domain.exception.IllegalTransitionException;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -28,6 +29,19 @@ class JobTest {
   @Test
   void newJobIsCreated() {
     assertEquals(JobStatus.CREATED, newJob().getStatus());
+  }
+
+  /**
+   * The factory stamps the timestamps itself. Nothing here needs a persistence context, which is
+   * exactly the point: {@code @PrePersist} and {@code @CreatedDate} would both leave this null.
+   */
+  @Test
+  void creationStampsTimestampsWithoutAJpaLifecycle() {
+    Job job = Job.create("SEND_EMAIL", Map.of("to", "a@b.c"), T0);
+
+    assertEquals(T0, job.getCreatedAt());
+    assertEquals(T0, job.getUpdatedAt());
+    assertEquals(JobStatus.CREATED, job.getStatus());
   }
 
   @Test

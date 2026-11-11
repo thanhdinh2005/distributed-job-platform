@@ -8,8 +8,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.Instant;
 import java.util.Map;
@@ -58,20 +56,28 @@ public class Job {
   @Column(name = "completed_at")
   private Instant completedAt;
 
-  @CreatedDate
-  @Column(nullable = false, updatable = false)
+  /**
+   * Timestamps are set by the entity, not by {@code @CreatedDate} / {@code @LastModifiedDate}.
+   *
+   * <p>Those are framework callbacks: auditing runs on persist inside a persistence context, so a
+   * plain {@code new Job()} in a unit test has a null timestamp, and an injected {@link
+   * java.time.Clock} would be ignored in favour of the framework's own. One clock, one source of
+   * truth.
+   */
+  @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 
-  @LastModifiedDate
-  @Column(nullable = false)
+  @Column(name = "updated_at", nullable = false)
   private Instant updatedAt;
 
-  public static Job create(String type, Map<String, Object> payload) {
+  public static Job create(String type, Map<String, Object> payload, Instant now) {
     Job job = new Job();
 
     job.jobType = type;
     job.status = JobStatus.CREATED;
     job.payload = payload;
+    job.createdAt = now;
+    job.updatedAt = now;
 
     return job;
   }

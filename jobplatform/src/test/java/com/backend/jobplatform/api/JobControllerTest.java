@@ -48,7 +48,7 @@ class JobControllerTest {
   private JobQueries jobQueries;
 
   private static Job jobWithId(UUID id) {
-    Job job = Job.create("SEND_EMAIL", Map.of("to", "a@b.c"));
+    Job job = Job.create("SEND_EMAIL", Map.of("to", "a@b.c"), Instant.parse("2026-11-09T12:00:00Z"));
     try {
       Field field = Job.class.getDeclaredField("id");
       field.setAccessible(true);

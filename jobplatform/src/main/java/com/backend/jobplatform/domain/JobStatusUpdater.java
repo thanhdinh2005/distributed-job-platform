@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
+import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -56,7 +57,9 @@ public class JobStatusUpdater {
         .orElseThrow(() -> new JobNotFoundException(jobId));
 
     JobStatus from = job.getStatus();
-    job.transitionTo(next, clock.instant(), reason);
-    jobEventRepository.save(JobEvent.of(job, from, next, reason));
+    // One instant for the whole transition: the job row and its audit row cannot disagree.
+    Instant now = clock.instant();
+    job.transitionTo(next, now, reason);
+    jobEventRepository.save(JobEvent.of(job, from, next, reason, now));
   }
 }

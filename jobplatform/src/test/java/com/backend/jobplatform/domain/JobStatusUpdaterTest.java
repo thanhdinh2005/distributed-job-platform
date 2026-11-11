@@ -51,7 +51,7 @@ class JobStatusUpdaterTest {
   }
 
   private Job existingJob() {
-    return Job.create("SEND_EMAIL", Map.of("to", "a@b.c"));
+    return Job.create("SEND_EMAIL", Map.of("to", "a@b.c"), NOW);
   }
 
   @Test
